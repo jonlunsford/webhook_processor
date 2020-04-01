@@ -26,6 +26,16 @@ defmodule WebhookProcessor.Endpoint do
     send_resp(conn, 200, "pong!")
   end
 
+  get "/version" do
+    resp =
+      case :application.get_key(:webhook_processor, :vsn) do
+        {:ok, vsn} -> vsn
+        _ -> "version not found :("
+      end
+
+    send_resp(conn, 200, resp)
+  end
+
   # Handle incoming events, if the payload is the right shape, process the
   # events, otherwise return an error.
   post "/events" do

@@ -21,6 +21,8 @@ defmodule WebhookProcessor.MixProject do
     ]
   end
 
+  # ./mix.exs
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
