@@ -22,3 +22,8 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 webhook_processor-*.tar
 
+.mix/
+.hex/
+
+# Ignore terraform resources
+.terraform/

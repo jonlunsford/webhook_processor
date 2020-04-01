@@ -12,7 +12,7 @@ defmodule WebhookProcessor.Application do
         scheme: :http,
         plug: WebhookProcessor.Endpoint,
         # Set the port per environment, see ./config/MIX_ENV.exs
-        options: [port: Application.get_env(:webhook_processor, :port)]
+        options: [port: String.to_integer(System.get_env("APP_PORT") || "4000")]
       )
     ]
 
