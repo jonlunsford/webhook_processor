@@ -1,34 +1,25 @@
-# ./lib/mix/taks/docker.ex
+# ./lib/mix/tasks/docker.ex
 defmodule Mix.Tasks.Docker do
   use Mix.Task
+  use Mix.Tasks.Utils
 
   @shortdoc "Docker utilities for building releases"
-  def run(["release"]) do
+  def run(["release" | env]) do
     # Build a fresh Elixir image, in case Dockerfile has changed
-    docker("build -t elixir-ubuntu:latest .")
+    build_image(env)
 
     # Get the current working directory
     {dir, _resp} = System.cmd("pwd", [])
 
     # Mount the working directory at /opt/build within the new elixir image
-    # Pass in the rel/bin/release script that will run distillery
+    # Execute the /opt/build/bin/release script
     docker(
-      "run -v #{String.trim(dir)}:/opt/build --rm -i elixir-ubuntu:latest /opt/build/rel/bin/release"
+      "run -v #{String.trim(dir)}:/opt/build --rm -i #{app_name()}:latest /opt/build/bin/release #{env}"
     )
   end
 
-  def run(["upgrade"]) do
-    # Build a fresh Elixir image, in case Dockerfile has changed
-    docker("build -t elixir-ubuntu:latest .")
-
-    # Get the current working directory
-    {dir, _resp} = System.cmd("pwd", [])
-
-    # Mount the working directory at /opt/build within the new elixir image
-    # Pass in the rel/bin/release script that will run distillery with the --upgrade flag
-    docker(
-      "run -v #{String.trim(dir)}:/opt/build --rm -i elixir-ubuntu:latest /opt/build/rel/bin/release --upgrade"
-    )
+  defp build_image(env) do
+    docker("build --build-arg ENV=#{env} -t #{app_name()}:latest .")
   end
 
   defp docker(cmd) do
