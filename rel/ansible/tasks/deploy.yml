@@ -1,7 +1,8 @@
+# ./rel/ansible/tasks/deploy.yml
+
 ---
 - hosts: webservers
   become: yes
-  become_user: "{{ deploy_user }}"
   vars_files:
     - "../vars/main.yml"
   tasks:

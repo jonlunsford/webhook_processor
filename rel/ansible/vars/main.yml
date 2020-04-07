@@ -1,12 +1,14 @@
+# ./rel/ansible/vars/main.yml
 ---
+mix_env: "{{ lookup('env', 'MIX_ENV')}}"
 app_port: "{{ lookup('env', 'APP_PORT') }}"
 app_name: "{{ lookup('env', 'APP_NAME') }}"
 app_vsn: "{{ lookup('env', 'APP_VSN') }}"
 app_local_release_path: "{{ lookup('env', 'APP_LOCAL_RELEASE_PATH') }}"
 
-app_local_path: "{{ app_local_release_path }}/{{ app_name }}.tar.gz"
-# Main app server config
+app_local_path: "{{ app_local_release_path }}/{{ mix_env }}-{{ app_vsn }}.tar.gz"
 
+# Main app server config
 # OS user that deploys / owns the release files
 deploy_user: deploy
 # OS group that deploys / owns the release files
@@ -14,9 +16,7 @@ deploy_group: "{{ deploy_user }}"
 
 # Base directory for deploy files
 deploy_dir: "/opt/{{ app_name }}"
-releases_dir: "{{ deploy_dir }}/releases"
 
 # Dirs owned by the deploy user
 deploy_dirs:
   - "{{ deploy_dir }}"
-  - "{{ releases_dir }}"
