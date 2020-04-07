@@ -20,10 +20,16 @@ erl_crash.dump
 *.ez
 
 # Ignore package tarball (built via "mix hex.build").
-webhook_processor-*.tar
+*.tar.gz
+
+# Ignore potentially sensitive key files
+*_key
+*_key.pub
 
 .mix/
 .hex/
 
 # Ignore terraform resources
 .terraform/
+terraform.tfstate
+terraform.tfstate.backup
