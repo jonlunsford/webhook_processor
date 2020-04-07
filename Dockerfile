@@ -1,29 +1,22 @@
 # ./Dockerfile
 # ENV matching production target host
-# We'll be using an ubuntu 18.04 EC2 instance to run this app
-FROM ubuntu:18.04
+# We'll be using a Debian linux EC2 instance to run this app
+# Sell all official elixir docker images here: https://hub.docker.com/_/elixir
+FROM elixir:1.10
 
-# Mostly locale related env config
-# Elixir expects to be built on a system with UTF-8
-ENV REFRESHED_AT=2018-08-16 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    HOME=/opt/build \
-    TERM=xterm\
-    DEBIAN_FRONTEND=noninteractive
+# By default, if we're cutting a release it'll likely be prod
+ARG ENV=prod
 
+# We'll pass in ENV as a build arg to docker
+ENV MIX_ENV=$ENV
+
+# Our working directory within the container
 WORKDIR /opt/build
 
-# Installing erlang, elixir and a few build deps
-RUN \
-  apt-get update -y && \
-  apt-get install -y git wget locales gnupg && \
-  locale-gen en_US.UTF-8 && \
-  wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && \
-  dpkg -i erlang-solutions_1.0_all.deb && \
-  rm erlang-solutions_1.0_all.deb && \
-  apt-get update -y && \
-  apt-get install -y erlang elixir
+# Add our release script to the container, named `release` and
+# placed into the ./bin/ directory in our project root
+ADD ./bin/release ./bin/release
 
-CMD ["/bin/bash"]
+# This is our entry point, make sure to run
+# `chmod +x bin/release` to make this script executable
+CMD ["bin/bash", $ENV]
