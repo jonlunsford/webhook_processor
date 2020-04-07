@@ -1,37 +1,28 @@
+# ./rel/ansible/tasks/ansible.ex
+
 defmodule Mix.Tasks.Ansible do
   use Mix.Task
+  use Mix.Tasks.Utils
 
   @shortdoc "Run ansible playbooks"
-  def run([playbook | app_version]) do
-    cmd_args = ["./ansible/tasks/#{playbook}.yml"]
-    app_version = if app_version == "", do: app_vsn(), else: List.first(app_version)
+  def run([playbook]) do
+    cmd_args = ["./rel/ansible/tasks/#{playbook}.yml"]
+    {dir, _resp} = System.cmd("pwd", [])
+    dir = String.trim(dir)
+    mix_env = System.get_env("MIX_ENV")
 
     System.cmd(
       "ansible-playbook",
       cmd_args,
       env: [
-        {"ANSIBLE_CONFIG", "./ansible/ansible.cfg"},
+        {"ANSIBLE_CONFIG", "#{dir}/rel/ansible/ansible.cfg"},
         {"APP_NAME", app_name()},
-        {"APP_VSN", app_version},
+        {"APP_VSN", app_vsn()},
         {"APP_PORT", app_port()},
-        {"APP_LOCAL_RELEASE_PATH",
-         "#{Mix.Project.build_path()}/rel/#{app_name()}/releases/#{app_version}"}
+        {"MIX_ENV", mix_env},
+        {"APP_LOCAL_RELEASE_PATH", "#{dir}/_build/#{mix_env}"}
       ],
       into: IO.stream(:stdio, :line)
     )
-  end
-
-  defp app_name do
-    Mix.Project.config()[:app]
-    |> Atom.to_string()
-  end
-
-  defp app_vsn do
-    Mix.Project.config()[:version]
-  end
-
-  defp app_port do
-    Application.get_env(:webhook_processor, :port)
-    |> Integer.to_string()
   end
 end
