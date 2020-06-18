@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Docker do
   use Mix.Tasks.Utils
 
   @shortdoc "Docker utilities for building releases"
-  def run(["release" | env]) do
+  def run([env]) do
     # Build a fresh Elixir image, in case Dockerfile has changed
     build_image(env)
 
