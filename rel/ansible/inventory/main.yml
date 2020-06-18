@@ -3,4 +3,4 @@ all:
   children:
     webservers:
       hosts:
-        ec2-54-67-44-99.us-west-1.compute.amazonaws.com
+        ec2-xx-xx-xx-xx.us-west-1.compute.amazonaws.com
