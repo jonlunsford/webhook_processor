@@ -1,0 +1,27 @@
+# ./rel/ansible/tasks/deploy.yml
+
+---
+- hosts: webservers
+  become: yes
+  vars_files:
+    - "../vars/main.yml"
+  tasks:
+    - name: Copy env to webserver
+      template:
+        src: "../templates/env.j2"
+        dest: "{{ deploy_dir }}/{{ app_name }}.env"
+
+    - name: "Check if {{ deploy_dir }} exists"
+      stat:
+        path: "{{ deploy_dir }}/{{ app_name }}.tar.gz"
+      register: new_deploy_dir
+
+    - name: Unarchive tarbal on webserver
+      unarchive: src={{ app_local_path }} dest={{ deploy_dir }}
+      when: not new_deploy_dir.stat.exists
+
+    - name: Set file permissions
+      file: path={{ deploy_dir }} owner={{ deploy_user }} group={{ deploy_group }} recurse=yes mode=0700
+
+    - name: Start app
+      raw: sudo /bin/systemctl restart {{ app_name}}

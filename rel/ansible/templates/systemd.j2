@@ -1,0 +1,23 @@
+## ./rel/ansible/templates/systemd.j2
+
+[Unit]
+Description={{ app_name }}
+After=local-fs.target network.target
+
+[Service]
+Type=simple
+User={{ deploy_user }}
+Group={{ deploy_group }}
+WorkingDirectory={{ deploy_dir }}
+ExecStart={{ deploy_dir }}/bin/{{ mix_env }} start
+ExecStop={{ deploy_dir }}/bin/{{ mix_env }} stop
+EnvironmentFile={{ deploy_dir }}/{{ app_name }}.env
+LimitNOFILE=65536
+UMask=0027
+SyslogIdentifier={{ deploy_user }}
+Restart=always
+RestartSec=5
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

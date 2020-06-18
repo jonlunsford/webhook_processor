@@ -1,0 +1,63 @@
+# ./rel/ansible/tasks/setup.yml
+
+---
+- hosts: webservers
+  gather_facts: False
+  become: yes
+  vars_files:
+    - "../vars/main.yml"
+  tasks:
+    # Ensure python is installed, the debian ec2 instance does by default
+    # Ansible will show us a warning about that
+    - name: Install python 2
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+    # Add the deploy group set in ../vars/main.yml if it does not exists
+    - name: "Add {{ deploy_group }} group"
+      group: name={{ deploy_group }} state=present
+
+    # Add the deploy user set in ../vars/main.yml if it does not exists
+    - name: "Add {{ deploy_user }} user"
+      user: name={{ deploy_user }} groups={{ deploy_group }} append=yes state=present
+
+    # Create the directories for the app
+    - name: Create deploy dirs
+      file: path={{ item }} state=directory owner={{ deploy_user }} group={{ deploy_user }} mode=0700
+      with_items: "{{ deploy_dirs }}"
+
+    # Create a sudoers file that gives the app user ONLY the ability to
+    # start/stop the app. This helps ensure the security of the server, in case
+    # the app user were compromised
+    - name: Create sudoers config for deploy user
+      template:
+        src: "../templates/sudoers.j2"
+        dest: /etc/sudoers.d/{{ deploy_user }}-{{ app_name }}
+        owner: root
+        group: root
+        mode: 0600
+
+    # Upload our systemd template
+    - name: Copy systemd config file
+      template:
+        src: "../templates/systemd.j2"
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+        owner: root
+        group: root
+        mode: 0644
+
+    # Enable the systemd service
+    - name: Enable service
+      service: name={{ app_name }} enabled=yes
+
+    # Forward port 80 to our app_port, set in ../vars/main.yml
+    - name: "Forward port 80 to {{ app_port }}"
+      iptables:
+        table: nat
+        chain: PREROUTING
+        in_interface: eth0
+        protocol: tcp
+        match: tcp
+        destination_port: "80"
+        jump: REDIRECT
+        to_ports: "{{ app_port }}"
+        comment: "Redirect web traffic to port {{ app_port }}"
